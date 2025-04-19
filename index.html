@@ -119,4 +119,113 @@ java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
 
 
 Shared Memory
+(SharedMemoryServer.java)
 
+import java.io.*;
+import java.net.*;
+
+public class SharedMemoryServer {
+    private static int sharedVariable = 50; // Initial value of shared variable
+
+    public static void main(String[] args) {
+        try (ServerSocket serverSocket = new ServerSocket(5000)) {
+            System.out.println("SharedMemoryServer started on port 5000...");
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                new ClientHandler(clientSocket).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static class ClientHandler extends Thread {
+        private final Socket socket;
+
+        public ClientHandler(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
+                out.println("Connected to SharedMemoryServer. Type 'exit' to quit.");
+                String command;
+
+                while ((command = in.readLine()) != null) {
+                    if (command.equalsIgnoreCase("get")) {
+                        out.println("Accessed Shared Variable: " + sharedVariable);
+                    } else if (command.equalsIgnoreCase("set")) {
+                        out.println("Enter Value:");
+                        try {
+                            int newValue = Integer.parseInt(in.readLine());
+                            sharedVariable = newValue;
+                            out.println("Updated Shared Variable: " + sharedVariable);
+                        } catch (NumberFormatException e) {
+                            out.println("Invalid Value. Please enter an integer.");
+                        }
+                    } else if (command.equalsIgnoreCase("exit")) {
+                        out.println("Disconnecting...");
+                        break;
+                    } else {
+                        out.println("Invalid Command");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+(SharedMemoryClient.java)
+
+import java.io.*;
+import java.net.*;
+
+public class SharedMemoryClient {
+    public static void main(String[] args) {
+        try (Socket socket = new Socket("localhost", 5000);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in))) {
+
+            System.out.println(in.readLine()); // Welcome message
+
+            String command;
+            while (true) {
+                System.out.print("Enter Command (get/set/exit): ");
+                command = userInput.readLine();
+                out.println(command);
+
+                if (command.equalsIgnoreCase("set")) {
+                    System.out.print("Enter Value: ");
+                    out.println(userInput.readLine());
+                }
+
+                String response = in.readLine();
+                System.out.println(response);
+
+                if (command.equalsIgnoreCase("exit")) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+STEPS:
+1)Start the server
+java SharedMemoryServer
+2)Start 2 client using terminal
+java SharedMemoryClient
+3)Obtain value using client 1
+java SharedMemoryClient
+4)Set value using client 1 itself
+java SharedMemoryClient
+5)Check the value using client 2
+java SharedMemoryClient
