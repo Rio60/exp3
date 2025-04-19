@@ -1,4 +1,4 @@
-Hello.idl
+(Hello.idl)
 module HelloApp {
     interface Hello {
        string sayHello();
@@ -6,7 +6,7 @@ module HelloApp {
     };
 };
 
-HelloClient.java
+(HelloClient.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
 import org.omg.CosNaming.*;
@@ -37,7 +37,7 @@ public class HelloClient {
     }
 }
 
-HelloImpl.java
+(HelloImpl.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
 import org.omg.PortableServer.*;
@@ -58,7 +58,7 @@ public class HelloImpl extends HelloPOA {
     }
 }
 
-HelloServer.java
+(HelloServer.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
 import org.omg.PortableServer.*;
@@ -115,3 +115,8 @@ java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
 4.Start the Client
 java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
 5.Server Output
+java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
+
+
+Shared Memory
+
