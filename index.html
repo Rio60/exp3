@@ -232,11 +232,15 @@ public class SharedMemoryClient {
 STEPS:
 1)Start the server
 java SharedMemoryServer
+
 2)Start 2 client using terminal
 java SharedMemoryClient
+
 3)Obtain value using client 1
-java SharedMemoryClient
+java SharedMemoryClient (get)
+
 4)Set value using client 1 itself
-java SharedMemoryClient
+java SharedMemoryClient (set)
+
 5)Check the value using client 2
-java SharedMemoryClient
+java SharedMemoryClient (get)
