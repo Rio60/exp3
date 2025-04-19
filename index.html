@@ -8,6 +8,8 @@ module HelloApp {
     };
 };
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 (HelloClient.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
@@ -39,6 +41,8 @@ public class HelloClient {
     }
 }
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 (HelloImpl.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
@@ -59,6 +63,8 @@ public class HelloImpl extends HelloPOA {
         orb.shutdown(false);  // Shutdown the ORB
     }
 }
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (HelloServer.java)
 import HelloApp.*;
@@ -119,6 +125,7 @@ java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
 5.Server Output
 java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
 
+-------------------------------------------------------------------------------------------------------------------------
 
 Shared Memory
 (SharedMemoryServer.java)
@@ -182,6 +189,8 @@ public class SharedMemoryServer {
         }
     }
 }
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (SharedMemoryClient.java)
 
