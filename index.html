@@ -1,13 +1,18 @@
 Corba
-jre/bin  jdk/bin  common files/oracle/java8
+
+(jre/bin)  (jdk/bin)  (common files/oracle/java8)
+
 (Hello.idl)
 module HelloApp {
     interface Hello {
         string sayHello();
     };
 };
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-In terminal ( & "path to idlj" -fall Hello.idl)
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+In terminal ( & "path to idlj.exe" -fall Hello.idl)
+(& "C:\Program Files\Java\jdk-1.8\bin\idlj.exe" -fall Hello.idl)
 
 
 (HelloServer.java)
@@ -169,7 +174,7 @@ public class SharedMemoryServer {
     }
 }
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (SharedMemoryClient.java)
 
@@ -210,9 +215,11 @@ public class SharedMemoryClient {
 }
 STEPS:
 1)Start the server
+javac SharedMemoryServer.java
 java SharedMemoryServer
 
 2)Start 2 client using terminal
+javac SharedMemoryClient.java
 java SharedMemoryClient
 
 3)Obtain value using client 1
