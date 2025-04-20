@@ -1,129 +1,107 @@
-CORBA
-
+Corba
 (Hello.idl)
 module HelloApp {
     interface Hello {
-       string sayHello();
-       void shutdown();
+        string sayHello();
     };
 };
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+In terminal ( & "path to idlj" -fall Hello.idl)
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-(HelloClient.java)
-import HelloApp.*;
-import org.omg.CORBA.*;
-import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
-
-public class HelloClient {
-    public static void main(String args[]) {
-        try {
-            // Initialize the ORB
-            ORB orb = ORB.init(args, null);
-
-            // Get the Naming Service reference
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-
-            // Resolve the object reference
-            String name = "Hello";
-            NameComponent path[] = ncRef.to_name(name);
-            Hello helloRef = HelloHelper.narrow(ncRef.resolve(path));
-
-            // Invoke the remote method
-            System.out.println(helloRef.sayHello());
-            helloRef.shutdown();
-        } catch (Exception e) {
-            System.out.println("ERROR : " + e);
-            e.printStackTrace(System.out);
-        }
-    }
-}
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-(HelloImpl.java)
-import HelloApp.*;
-import org.omg.CORBA.*;
-import org.omg.PortableServer.*;
-
-public class HelloImpl extends HelloPOA {
-    private ORB orb;
-
-    public void setORB(ORB orb_val) {
-        orb = orb_val;
-    }
-
-    public String sayHello() {
-        return "Hello, CORBA world!";
-    }
-
-    public void shutdown() {
-        orb.shutdown(false);  // Shutdown the ORB
-    }
-}
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (HelloServer.java)
 import HelloApp.*;
 import org.omg.CORBA.*;
 import org.omg.PortableServer.*;
-import org.omg.CosNaming.*;
-import org.omg.CosNaming.NamingContextPackage.*;
 
-public class HelloServer {
-    public static void main(String args[]) {
-        try {
-            // Initialize the ORB
-            ORB orb = ORB.init(args, null);
+import java.io.FileWriter;
 
-            // Get reference to Root POA and activate the POAManager
-            POA rootpoa = POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-            rootpoa.the_POAManager().activate();
+class HelloImpl extends HelloPOA {
+    private ORB orb;
 
-            // Create servant and register it with the ORB
-            HelloImpl helloImpl = new HelloImpl();
-            helloImpl.setORB(orb);
+    public void setORB(ORB orb) {
+        this.orb = orb;
+    }
 
-            // Get the object reference from the servant
-            org.omg.CORBA.Object ref = rootpoa.servant_to_reference(helloImpl);
-            Hello href = HelloHelper.narrow(ref);
-
-            // Get the Naming Service reference
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContextExt ncRef = NamingContextExtHelper.narrow(objRef);
-
-            // Bind the object reference in naming
-            String name = "Hello";
-            NameComponent path[] = ncRef.to_name(name);
-            ncRef.rebind(path, href);
-
-            System.out.println("HelloServer ready and waiting...");
-
-            // Wait for client requests
-            orb.run();
-        } catch (Exception e) {
-            System.out.println("ERROR : " + e);
-            e.printStackTrace(System.out);
-        }
-        System.out.println("HelloServer Exiting...");
+    @Override
+    public String sayHello() {
+        return "Hello, CORBA World!";
     }
 }
 
-1.Compile Hello.idl using idlj
-idlj -fall Hello.idl
-2.Compile all the java files present inside Module HelloApp , client and server files
-javac HelloApp/*.java helloServer.java helloClient.java
-3.Start the ORB
-tnameserv -ORBIntialPort 1050
-3.Start the server
-java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
-4.Start the Client
-java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
-5.Server Output
-java HelloServer -ORBInitialPort 1050 -ORBInitialHost localhost
+public class HelloServer {
+    public static void main(String[] args) {
+        try {
+            // Initialize ORB
+            ORB orb = ORB.init(args, null);
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("RootPOA");
+            POA rootpoa = POAHelper.narrow(objRef);
+            rootpoa.the_POAManager().activate();
+
+            // Create servant object
+            HelloImpl helloImpl = new HelloImpl();
+            helloImpl.setORB(orb);
+
+            // Convert servant to CORBA reference
+            org.omg.CORBA.Object ref = rootpoa.servant_to_reference(helloImpl);
+            Hello helloRef = HelloHelper.narrow(ref);
+
+            // Generate IOR and save to file
+            String ior = orb.object_to_string(helloRef);
+            System.out.println("Server ready and waiting...");
+            System.out.println("IOR: " + ior);
+            
+            FileWriter file = new FileWriter("ior.txt");
+            file.write(ior);
+            file.close();
+
+            // Keep server running
+            orb.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+(HelloClient.java)
+import HelloApp.*;
+import org.omg.CORBA.*;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+
+public class HelloClient {
+    public static void main(String[] args) {
+        try {
+            // Initialize ORB
+            ORB orb = ORB.init(args, null);
+
+            // Read IOR from file
+            BufferedReader br = new BufferedReader(new FileReader("ior.txt"));
+            String ior = br.readLine();
+            br.close();
+
+            // Convert IOR to CORBA object
+            org.omg.CORBA.Object objRef = orb.string_to_object(ior);
+            Hello helloRef = HelloHelper.narrow(objRef);
+
+            // Call remote method
+            String message = helloRef.sayHello();
+            System.out.println("Response from server: " + message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+javac HelloApp/*.java HelloServer.java HelloClient.java
+
+tnameserv -ORBInitialPort 1050
+
+java HelloServer -ORBInitialPort 1050
+
+java HelloClient -ORBInitialPort 1050
+
 
 -------------------------------------------------------------------------------------------------------------------------
 
